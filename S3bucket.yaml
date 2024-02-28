@@ -1,0 +1,18 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+Parameters:
+  SrinivasS3In:
+    Type: String
+    Default: intellipaat-sriivas
+    Description: This will be the name of our S3 bucket
+Resources:
+  SrinivasS3Cf:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: SrinivasS3In
+      VersioningConfiguration:
+        Status: Enabled
+Outputs:
+  SrinivasS3Out:
+    Value: SrinivasS3Cf
+    Description: The deployment was successful

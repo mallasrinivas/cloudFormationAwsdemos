@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  EmailAddress:
+    Type: String
+    Description: Email address to be used for receiving test emails
+Resources:
+  MySQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: MyFifoQueue.fifo
+      FifoQueue: true
+  SESConfigurationSet:
+    Type: AWS::SES::ConfigurationSet
+    Properties:
+      Name: MyConfigurationSet
+  SESConfigurationSetEventDestination:
+    Type: AWS::SES::ConfigurationSetEventDestination
+    Properties:
+      ConfigurationSetName: SESConfigurationSet
+      EventDestination:
+        Name: MyEventDestination
+        Enabled: true
+        MatchingEventTypes:
+          - send
+        SNSDestination:
+          TopicARN: SESNotificationTopic
+  SESNotificationTopic:
+    Type: AWS::SNS::Topic
+  SESNotificationSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: EmailAddress
+      Protocol: email
+      TopicArn: SESNotificationTopic
+  SESIdentityPolicy:
+    Type: AWS::SES::IdentityPolicy
+    Properties:
+      PolicyName: MyIdentityPolicy
+      Policy:
+        Version: 2012-10-17
+        Statements:
+          - Effect: Allow
+            Principal: "*"
+            Action: ses:SendEmail
+            Resource: "*"
+            Condition:
+              StringEquals:
+                ses:FromAddress: EmailAddress
+Outputs:
+  MySQSQueueArn:
+    Value: MySQSQueue.Arn
+    Description: ARN of the created FIFO SQS queue
+  SESNotificationTopicArn:
+    Value: SESNotificationTopic
+    Description: ARN of the SNS topic for SES notifications
